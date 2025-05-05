@@ -1,0 +1,62 @@
+hive
+
+create database mydb2;
+use mydb2;
+create table flight(fno int, year int, dest varchar(10), delay float);
+alter table flight rename to air_flight;
+alter table air_flight add columns(source varchar(10));
+drop table flight;
+desc air_flight;
+create table flight(fno int, year int, dest varchar(10). delay float)
+  >row format delimited
+  >fields terminated by ','
+  >lines terminated by '\n'
+  >stored as textfile;
+
+insert into flight values(123,2009,"Pune",30.6);
+insert into flight values(789,2004,"Latur",90.3);
+
+select * from flight;
+
+open another terminal 
+
+gedit f.txt
+(//some written data)
+789,2004,"Latur",90.3
+123,2009,"Pune",30.6
+123,2009,"Pune",30.6
+123,2009,"Pune",30.6
+
+pwd
+ls
+
+
+now open 1st terminal
+
+  >load data local inpath "f.txt"
+  >overwrite into table flight;
+
+select * from flight;
+
+create table nflight(fno int, year int, source varchar(10))
+  >row format delimited
+  >fields terminated by ','
+  >lines terminated by '\n'
+  >stored as textfile;
+
+select * from flight;
+
+insert into nflight values(923,2009,"pune");
+select a.fno, a.year, a.dest, a.delay,b.source
+  >from flight a join nflight b
+  >on(a.fno=b.fno);
+
+select * from nflight;
+
+ select * from flight;
+
+create index flight_index on table flight(fno)
+  > as 'org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler'
+  > WITH DEFERRED REBUILD;
+
+show tables;
