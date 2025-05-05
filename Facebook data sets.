@@ -1,0 +1,30 @@
+import pandas as pd
+
+df = pd.read_csv('Facebook Metrics of Cosmetic Brand.csv')
+
+print(df.head())
+
+engagement_df = df[['like', 'comment', 'share']]
+print(engagement_df.head())
+
+popular_posts = df[df['like'] > 500]
+print(popular_posts[['Type', 'like', 'comment', 'share']].head())
+
+meta_df = df[['Unnamed: 0', 'Type', 'Post Month']].rename(columns={'Unnamed: 0': 'Post ID'})
+
+# Merge on Post ID
+merged_df = pd.merge(df, meta_df, left_on='Unnamed: 0', right_on='Post ID')
+print(merged_df[['Post ID', 'Type_x', 'Type_y']].head())
+
+sorted_likes = df.sort_values(by='like', ascending=False)
+print(sorted_likes[['Type', 'like', 'comment', 'share']].head())
+
+print("Original Shape:", df.shape)
+
+melted_df = pd.melt(df, id_vars=['Unnamed: 0', 'Type'], value_vars=['like', 'comment', 'share'],
+                    var_name='Metric', value_name='Value')
+print(melted_df.head())
+
+pivot_df = melted_df.pivot(index='Unnamed: 0', columns='Metric', values='Value')
+print(pivot_df.head())
+
