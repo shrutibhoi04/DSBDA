@@ -1,0 +1,92 @@
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+df = pd.read_csv('AirQuality.csv', delimiter=';')
+
+df.head()
+
+df = df.rename(columns={'T': 'Temperature'})
+df = df.rename(columns={'RH': 'Relative Humidity'})
+df = df.rename(columns={'AH': 'Absolute Humidity'})
+
+df.head()
+
+df = df.drop(['Unnamed: 15', 'Unnamed: 16'], axis=1, errors='ignore')
+
+df['CO(GT)'] = df['CO(GT)'].astype(str).str.replace(',', '.').astype(float)
+df['C6H6(GT)'] = df['C6H6(GT)'].astype(str).str.replace(',', '.').astype(float)
+df['Temperature'] = df['Temperature'].astype(str).str.replace(',', '.').astype(float)
+df['Relative Humidity'] = df['Relative Humidity'].astype(str).str.replace(',', '.').astype(float)
+df['Absolute Humidity'] = df['Absolute Humidity'].astype(str).str.replace(',', '.').astype(float)
+
+df = df.drop_duplicates()
+
+df = df.fillna(df.mean(numeric_only=True))
+
+df = df.dropna()
+
+df['Absolute Humidity'] = df['Absolute Humidity'].multiply(100)
+
+def remove_outliers(column):
+    Q1 = column.quantile(0.25)
+    Q3 = column.quantile(0.75)
+    IQR = Q3 - Q1
+    threshold = 1.5 * IQR
+    outlier_mask = (column < Q1 - threshold) | (column > Q3 + threshold)
+    return column[~outlier_mask]
+
+cols = ['Temperature', 'Relative Humidity', 'Absolute Humidity',
+        'PT08.S4(NO2)', 'PT08.S5(O3)', 'C6H6(GT)', 'PT08.S2(NMHC)', 'PT08.S1(CO)']
+for col in cols:
+    df[col] = remove_outliers(df[col])
+
+df['Date'] = pd.to_datetime(df['Date'], format='%d/%m/%Y', errors='coerce')
+df['Year'] = df['Date'].dt.year
+df['Month'] = df['Date'].dt.month
+df['yearr'] = df['Year'].astype(str)
+df['month'] = df['Month'].astype(str)
+
+plt.figure(figsize=(8, 6))
+sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Correlation Heatmap')
+plt.show()
+
+sns.lineplot(df, x='Month', y='Absolute Humidity')
+plt.show()
+
+sns.lineplot(df, x='month', y='Temperature')
+plt.show()
+
+sns.barplot(df, x='month', y='CO(GT)')
+plt.show()
+
+sns.scatterplot(df, x='PT08.S1(CO)', y='PT08.S5(O3)', hue='yearr')
+plt.show()
+
+co_counts = df['CO(GT)'].value_counts().nlargest(5)
+plt.figure(figsize=(6, 6))
+co_counts.plot.pie(autopct='%1.1f%%', colors=["skyblue", "lightcoral", "gold", "lightgreen", "violet"], startangle=90)
+plt.title("CO Levels Distribution")
+plt.ylabel("")
+plt.show()
+
+sns.histplot(df['Temperature'], bins=20, kde=True, color='red')
+plt.title("Temperature Distribution")
+plt.xlabel("Temperature (°C)")
+plt.ylabel("Frequency")
+plt.show()
+
+sns.boxplot(data=df, x='Month', y='Temperature')
+plt.title('Box Plot of Temperature by Month')
+plt.xlabel('Month')
+plt.ylabel('Temperature')
+plt.show()
+
+df["Category"] = "CO Levels"
+sns.violinplot(x=df["Category"], y=df["CO(GT)"], color="skyblue")
+plt.title("CO Levels Violin Plot")
+plt.xlabel("Category")
+plt.ylabel("CO(GT)")
+plt.show()
