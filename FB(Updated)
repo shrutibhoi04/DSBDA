@@ -1,0 +1,45 @@
+Perform the following operations using Python on the Facebook metrics data sets
+a. Create data subsets
+b. Merge Data
+c. Sort Data
+d. Transposing Data
+e. Shape and reshape Data
+
+---------------------------------------------------------------------------------------------------------------------------
+
+import pandas as pd
+import numpy as np
+df =pd.read_csv(r"FB.csv")
+df
+
+df.describe()
+
+df.shape
+
+df1 = df[df['Open']>0.15]
+
+df1 = df[['Open', 'High','Low','Close','Adj Close','Volume']].loc[0:15]
+df1 
+
+df2 = df[['Open', 'High','Low','Close','Adj Close','Volume']].loc[16:30]
+df2
+
+df3 = df[['Open', 'High','Low','Close','Adj Close','Volume']].loc[31:50]
+df3
+
+merging = pd.concat([df1,df2,df3])
+merging
+
+sort_values = df.sort_values('Open', ascending = False)
+sort_values
+
+df_transposed = df.T
+
+shaping = df.shape
+shaping
+
+pivot_table = pd.pivot_table(df,index=['Date', 'Open'])
+print(pivot_table)
+
+reshaping_arr = np.array([1,2,3,4,5,6])
+reshaping_arr.reshape(3,2)
